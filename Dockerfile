@@ -1,4 +1,3 @@
-  
 FROM golang:1.16 as build-env
 
 WORKDIR /go/src/app
