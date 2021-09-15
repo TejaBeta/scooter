@@ -15,6 +15,8 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -23,22 +25,42 @@ import (
 )
 
 const scooter = "🛴"
-const repeat = 10
+
+var repeat = 1
+var port = "8080"
 
 func main() {
+
 	log.SetFormatter(&log.TextFormatter{
 		DisableColors: true,
 		FullTimestamp: true,
 	})
-	isDebug()
-	log.Println(repScooter())
+
+	debugChecker()
+
+	if os.Getenv("PORT") != "" {
+		port = os.Getenv("PORT")
+	}
+
+	http.HandleFunc("/", scooterHandler)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
+}
+
+func scooterHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("%s endpoint hit", scooter)
+	fmt.Fprint(w, repScooter())
 }
 
 func repScooter() string {
+	if os.Getenv("REPEAT_SCOOTER") != "" {
+		r, _ := strconv.Atoi(os.Getenv("REPEAT_SCOOTER"))
+		repeat = r
+	}
+
 	return strings.Repeat(scooter, repeat)
 }
 
-func isDebug() {
+func debugChecker() {
 	debugFlag, _ := strconv.ParseBool(os.Getenv("DEBUG_SCOOTER"))
 	if debugFlag {
 		log.SetLevel(log.DebugLevel)
